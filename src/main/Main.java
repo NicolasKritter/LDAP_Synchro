@@ -5,7 +5,13 @@
  */
 package main;
 
+import java.io.IOException;
+import java.util.Random;
+import java.util.Scanner;
+
+import config.ConfigProcessor;
 import main.ldapConnection.Ldap;
+import security.Encrypt;
 
 /**
  *
@@ -15,26 +21,39 @@ public class Main {
 
     /**
      * @param args the command line arguments
+     * @throws IOException 
      */
-    public static void main(String[] args) {
-    	 //Adresse du serveur sur lequel se trouve l'annuaire LDAP
-        String serverURL = "ldap://localhost";
-        //Pourt du serveur sur lequel se trouve l'annuaire LDAP
-        String serverPort = "1389";
-        //Login de connexion à l'annuaire LDAP : Le login dois être sous forme de "distinguished name"
-        //ce qui signifie qu'il dois être affiché sous la forme de son arborescence LDAP
-        String serverLogin = "cn=Directory Manager";
-        //Mot de passe de connexion à l'annuaire LDAP
-        String serverPass = "password";
-		String DCs = "DC=isep,DC=fr";
+    public static void main(String[] args) throws IOException {
 
-        Ldap ldap = new Ldap(serverURL,serverPort);
-        ldap.connect(serverLogin,serverPass);
-        ldap.getUsers(DCs);
-        ldap.searchByType("person");
-    	
-
+    	 ConfigProcessor properties = ConfigProcessor.getInstance();
+ 	    	String serverURL = properties.getPropValues("serverUrl");;
+ 	    	 String serverPort = properties.getPropValues("serverPort");
+ 	    	 String serverLogin =properties.getPropValues("serverLogin");
+ 	    	 String serverPass =properties.getPropValues("serverPass");
+ 	    	 String DCs =properties.getPropValues("DCs");
+ 	    	 System.out.println(serverURL);
+ 	    	 if (serverPass==null || serverPass.equals("")) {
+ 	    		 //password
+ 	    		 Scanner scanner =  new Scanner(System.in);
+ 	    		 System.out.print("Entrez le password dy LDAP: ");
+ 	    		 serverPass =  Encrypt.encryptString(scanner.nextLine());
+ 	    		 scanner.close();
+ 	    		 properties.setProperty("serverPass",serverPass);
+ 	    	 }
        
+        Ldap ldap = new Ldap(serverURL,serverPort);
+//        ldap.connect(serverLogin,serverPass);
+//        ldap.getUsers(DCs);
+//        ldap.searchByType("person");
+
+       String decrypted = Encrypt.decryptString(serverPass);
+       System.out.println(decrypted);
+       
+
+        
+
     }
+    
+
 
 }
