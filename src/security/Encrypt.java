@@ -14,7 +14,6 @@ public class Encrypt {
 
 	private static final String  KEY = "mxeu1jjwwj6iutoj";
 	private static final SecretKeySpec   AES_KEY = new SecretKeySpec(KEY.getBytes(), "AES");
-	
 	public static byte[] getBytesFromString(String str) {
 		 byte[] res = new byte[str.length()];
 	        for (int i=0; i<str.length(); i++) {

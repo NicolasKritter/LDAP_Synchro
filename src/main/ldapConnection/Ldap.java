@@ -1,7 +1,10 @@
 package main.ldapConnection;
 
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -12,6 +15,14 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+import javax.naming.ldap.Control;
+import javax.naming.ldap.InitialLdapContext;
+import javax.naming.ldap.LdapContext;
+import javax.naming.ldap.SortControl;
+
+import main.Main;
+import main.parsing.Ecole;
+import main.parsing.Utilisateur;
 
 public class Ldap {
 	
@@ -19,8 +30,10 @@ public class Ldap {
 	 private String serverPort;
 	 private String serverLogin;
 	 private String serverPass;
-	 private static Ldap ldap; //TODO
+	 private static Ldap ldap; 
+	 private String lastModified;
 	 private Hashtable<String,String> environnement = new Hashtable<String,String>();
+	 private static final String PERSON_FILTER =  "person";
 	public Ldap(String serverURL, String serverPort) {
 		this.serverURL = serverURL;
 		this.serverPort = serverPort;
@@ -37,48 +50,65 @@ public class Ldap {
 	}
 	
 	
-	public void getUsers(String DCs) {
-		 String typeFilter = "person";
+	public List<Utilisateur> getUsersToSync(String DCs,String timeFilter) throws IOException {
+		int schoolId = Main.getSchoolId();
+
 		 try {
-			DirContext contexte = new InitialDirContext(environnement);
+			 List<Utilisateur> list = new LinkedList<Utilisateur>();
+			 LdapContext contexte = new InitialLdapContext(environnement,null);
 			SearchControls searchControls = new SearchControls();
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            String[] attributes = {"givenName","memberOf","uid","objectClass","modifyTimeStamp","userPassword" };
+            String[] attributes = {"givenName","memberOf","uid","objectClass","modifyTimeStamp","userPassword","sn" };
     		searchControls.setReturningAttributes(attributes);
-            String filter = "(objectClass="+typeFilter+")";
+    		
+    		 String sortKey = "modifyTimeStamp";
+    		 contexte.setRequestControls(new Control[] { 
+    	         new SortControl(sortKey, Control.CRITICAL) });
+    		 // pas de suppérieur ou égal du coup on prend l'inverse: ! de <=
+            String filter = "(&(objectClass="+PERSON_FILTER+")(!(modifyTimestamp<="+timeFilter+")))";
             NamingEnumeration values = contexte.search(DCs, filter, searchControls);
             while (values.hasMoreElements()) {
                 SearchResult result = (SearchResult) values.next();
                 Attributes attribs = result.getAttributes();
                 if (null != attribs) {
                     Attribute userPassword = attribs.get("userPassword");
-                    if (userPassword!=null){
-                        String pass = new String((byte[]) userPassword.get());
-                         System.out.println("pass get: "+pass);
-                    }
                     Attribute attName = attribs.get("givenName");
-                    if (null!=attName) {
-                    	System.out.println("givenName= "+attName);
-                    }
+                    Attribute lastName = attribs.get("sn");
                     Attribute lastModified = attribs.get("modifyTimeStamp");
-                    if (null!=lastModified) {
-                    	System.out.println("modifyTimeStamp= "+lastModified);
-                    }
                     Attribute uid = attribs.get("uid");
-                    if (null!=uid) {
+                    if (null!=uid && userPassword!=null) {
+                    	Utilisateur utilisateur = new Utilisateur();
+                    	utilisateur.setLogin(uid.get().toString());
+                    	utilisateur.setPassword( new String((byte[]) userPassword.get()));
                     	System.out.println("uid= "+uid.get());
+                    	System.out.println("pass get: "+new String((byte[]) userPassword.get()));
+                    	utilisateur.setPrenom(attName.get().toString());
+                    	utilisateur.setNom(lastName.get().toString());
+                    	utilisateur.setEcole(new Ecole(schoolId));
+                    	list.add(utilisateur);
+                    	this.lastModified = lastModified.get().toString();
+                    	
                     }
+                   
+                  
+
                    
 		}
 	}
-			contexte.close();
+            contexte.close();
+            return list;
+			
 		} catch (NamingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return null;
 		}
 	}
 	
-	public void searchByType( String typeFilter) {
+	public String getLastModified() {
+		return lastModified;
+	}
+	public void searchByType( String typeFilter,String DCs) {
 		//filtrer pour n'avoir que des personnes
       
         //On remplis un tableau avec les parametres d'environement et de connexion au LDAP
@@ -92,7 +122,7 @@ public class Ldap {
             
             try {
                 
-                Attributes attrs = contexte.getAttributes("dc=isep,dc=fr");
+                Attributes attrs = contexte.getAttributes(DCs);
                 //On affiche le nom complet de dupont
                 System.out.println(attrs);
                 SearchControls searchControls = new SearchControls();
@@ -100,7 +130,7 @@ public class Ldap {
                 String[] attributes = { "cn", "sn", "givenName","memberOf","uid","objectClass","modifyTimeStamp","userPassword" };
 		searchControls.setReturningAttributes(attributes);
                 String filter = "(objectClass="+typeFilter+")";
-                NamingEnumeration values = contexte.search("DC=isep,DC=fr", filter, searchControls);
+                NamingEnumeration values = contexte.search(DCs, filter, searchControls);
                 while (values.hasMoreElements()) {
                     SearchResult result = (SearchResult) values.next();
                     Attributes attribs = result.getAttributes();
