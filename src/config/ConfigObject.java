@@ -73,21 +73,21 @@ public class ConfigObject {
 		if (serverURL == null || serverURL.equals("")) {
 			Scanner scanner = new Scanner(System.in);
 			System.out.print("Entrez l'url du LDAP: ");
-			serverURL = Encrypt.encryptString(scanner.nextLine());
+			serverURL = scanner.nextLine();
 			scanner.close();
 			properties.setProperty("serverURL", serverURL);
 		}
 		if (serverPort == null || serverPort.equals("")) {
 			Scanner scanner = new Scanner(System.in);
 			System.out.print("Entrez le port du LDAP: ");
-			serverPort = Encrypt.encryptString(scanner.nextLine());
+			serverPort = scanner.nextLine();
 			scanner.close();
 			properties.setProperty("serverPort", serverPort);
 		}
 		if (serverLogin == null || serverLogin.equals("")) {
 			Scanner scanner = new Scanner(System.in);
 			System.out.print("Entrez le port du LDAP: ");
-			serverLogin = Encrypt.encryptString(scanner.nextLine());
+			serverLogin =scanner.nextLine();
 			scanner.close();
 			properties.setProperty("serverLogin", serverLogin);
 		}
