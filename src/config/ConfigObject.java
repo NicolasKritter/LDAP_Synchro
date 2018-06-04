@@ -54,7 +54,7 @@ public class ConfigObject {
 	}
 	public static void init() throws IOException {
 
-		serverURL = properties.getPropValues("serverUrl");
+		serverURL = properties.getPropValues("serverURL");
 		serverPort = properties.getPropValues("serverPort");
 		serverLogin = properties.getPropValues("serverLogin");
 		serverPass = properties.getPropValues("serverPass");
