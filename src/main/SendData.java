@@ -12,8 +12,9 @@ public class SendData {
 private static final String HOST = "http://localhost:8080/API/LDAP-synchro";
 private static final String ADD_UTILISATEURS = "/ajouter-utilisateur";
 
-public static void syncUsers(List<Utilisateur> list,String KEY ) throws Exception {
-	if (list.size()<1) {return;}
+public int  syncUsers(List<Utilisateur> list,String KEY ) throws Exception {
+	if (list.size()==0) {return;}
+	
 	String urlBuild = HOST+ADD_UTILISATEURS+"?schoolKey="+KEY;
 	URL url = new URL(urlBuild);
 	HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -25,6 +26,7 @@ public static void syncUsers(List<Utilisateur> list,String KEY ) throws Exceptio
 	wr.writeBytes(data);
 	wr.flush();
 	wr.close();
-
+	int responseCode = con.getResponseCode();
+	return responseCode;
 }
 }
