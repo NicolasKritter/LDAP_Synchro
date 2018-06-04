@@ -67,36 +67,43 @@ public class ConfigObject {
 
 	public static void updateValues()
 			throws FileNotFoundException, IOException {
+		Scanner scanner = new Scanner(System.in);
 		if (timeFilter == null || timeFilter.equals("")) {
 			timeFilter = "20080812000000.0Z";
 		}
 		if (serverURL == null || serverURL.equals("")) {
-			Scanner scanner = new Scanner(System.in);
+			
 			System.out.print("Entrez l'url du LDAP: ");
 			serverURL = scanner.nextLine();
-			scanner.close();
+			
 			properties.setProperty("serverURL", serverURL);
 		}
 		if (serverPort == null || serverPort.equals("")) {
-			Scanner scanner = new Scanner(System.in);
+			
 			System.out.print("Entrez le port du LDAP: ");
 			serverPort = scanner.nextLine();
-			scanner.close();
+			
 			properties.setProperty("serverPort", serverPort);
 		}
+		if (DCs == null || DCs.equals("")) {
+			
+			System.out.print("Entrez le domaine du LDAP: ");
+			DCs = scanner.nextLine();
+			properties.setProperty("DCs", DCs);
+		}
 		if (serverLogin == null || serverLogin.equals("")) {
-			Scanner scanner = new Scanner(System.in);
-			System.out.print("Entrez le port du LDAP: ");
+			
+			System.out.print("Entrez le login du LDAP: ");
 			serverLogin =scanner.nextLine();
-			scanner.close();
 			properties.setProperty("serverLogin", serverLogin);
 		}
 		if (serverPass == null || serverPass.equals("")) {
-			Scanner scanner = new Scanner(System.in);
+			
 			System.out.print("Entrez le password du LDAP: ");
 			serverPass = Encrypt.encryptString(scanner.nextLine());
-			scanner.close();
+			
 			properties.setProperty("serverPass", serverPass);
 		}
+		scanner.close();
 	}
 }

@@ -1,11 +1,9 @@
 package config;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Date;
 import java.util.Properties;
 
 public class ConfigProcessor {
@@ -27,10 +25,9 @@ public class ConfigProcessor {
 	public void setProperty(String key,String password)
 			throws FileNotFoundException, IOException {
 		Properties prop = new Properties();
-
 		inputStream = getClass().getClassLoader()
 				.getResourceAsStream(PROPERTIES_FILENAME);
-
+		
 		if (inputStream != null) {
 			prop.load(inputStream);
 		} else {
